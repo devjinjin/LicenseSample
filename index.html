@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KLCUBE License Player Demo</title>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script src="./klcube-license-player.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+    }
+
+    h1 {
+      margin: 0 0 20px 0;
+      font-size: 24px;
+    }
+
+    .layout {
+      display: flex;
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .left-panel,
+    .right-panel {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .left-panel {
+      flex: 1.2;
+      min-width: 0;
+    }
+
+    .right-panel {
+      flex: 0.8;
+      min-width: 320px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 10px 16px;
+      border: 1px solid #bbb;
+      background: #fff;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+
+    button:hover {
+      background: #f0f0f0;
+    }
+
+    .video-wrap {
+      width: 100%;
+      background: #000;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    video {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .log-title {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    pre {
+      margin: 0;
+      height: 500px;
+      overflow-y: auto;
+      background: #111;
+      color: #00e676;
+      padding: 12px;
+      border-radius: 6px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 13px;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        flex-direction: column;
+      }
+
+      .right-panel {
+        min-width: auto;
+      }
+
+      pre {
+        height: 260px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <h1>KLCUBE License Player Demo</h1>
+
+  <div class="layout">
+    <div class="left-panel">
+      <div class="button-group">
+        <button id="btnActivate">1. Activate</button>
+        <button id="btnValidate">2. Validate</button>
+        <button id="btnPlay">3. Play</button>
+        <button id="btnClear">Clear Session</button>
+      </div>
+
+      <div class="video-wrap">
+        <video id="videoPlayer" controls></video>
+      </div>
+    </div>
+
+    <div class="right-panel">
+      <div class="log-title">Log</div>
+      <pre id="log"></pre>
+    </div>
+  </div>
+
+  <script>
+    const logEl = document.getElementById("log");
+
+    function log(message, data) {
+      const line = typeof data !== "undefined"
+        ? `${message}\n${JSON.stringify(data, null, 2)}\n\n`
+        : `${message}\n\n`;
+
+      logEl.textContent += line;
+      logEl.scrollTop = logEl.scrollHeight;
+      console.log(message, data ?? "");
+    }
+
+    const player = new KlcubeLicensePlayer({
+      serverBaseUrl: "http://deafpay.devklcube.co.kr",
+      licenseKey: "KLC-LIC-F4C248DA45AE419E9C10C761F2607702",
+      videoElement: "#videoPlayer",
+      logger: (eventName, data) => log(`[${eventName}]`, data)
+    });
+
+    //     const player = new KlcubeLicensePlayer({
+    //   serverBaseUrl: "http://3.39.230.9:8080/",
+    //   licenseKey: "KLC-LIC-9AB8F11004FB40B3AB2B9209FF3CA60C",
+    //   videoElement: "#videoPlayer",
+    //   logger: (eventName, data) => log(`[${eventName}]`, data)
+    // });
+    
+    document.getElementById("btnActivate").addEventListener("click", async () => {
+      try {
+        const result = await player.activate();
+        log("[RESULT] ACTIVATE", result);
+      } catch (error) {
+        log("[ERROR] ACTIVATE", { message: error.message, resultCode: error.resultCode });
+      }
+    });
+
+    document.getElementById("btnValidate").addEventListener("click", async () => {
+      try {
+        const result = await player.validate();
+        log("[RESULT] VALIDATE", result);
+      } catch (error) {
+        log("[ERROR] VALIDATE", { message: error.message, resultCode: error.resultCode });
+      }
+    });
+
+    document.getElementById("btnPlay").addEventListener("click", async () => {
+      try {
+        const result = await player.play("1");
+        log("[RESULT] PLAY", result);
+      } catch (error) {
+        log("[ERROR] PLAY", { message: error.message, resultCode: error.resultCode });
+      }
+    });
+
+    document.getElementById("btnClear").addEventListener("click", () => {
+      player.stop();
+      player.clearSession();
+      log("[INFO] Session cleared");
+    });
+  </script>
+</body>
+
+</html>
